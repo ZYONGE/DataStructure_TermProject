@@ -1,25 +1,17 @@
 <div align="center">
 
-# [PROJECT_NAME]
-
-Source code for the **[Course_Name]** course
+# 자료구조 기말프로젝트
 
 </div>
 
 #### Languages
-<img src="https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white"/>
-<img src="https://img.shields.io/badge/JSP-007396?style=for-the-badge&logo=java&logoColor=white"/>
-<img src="https://img.shields.io/badge/Servlet-6DB33F?style=for-the-badge&logo=apachetomcat&logoColor=white"/>
-<img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white"/>
-<img src="https://img.shields.io/badge/C-00599C?style=for-the-badge&logo=c&logoColor=white"/>
-<img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black"/>
 
-#### Frameworks
-<img src="https://img.shields.io/badge/Spring-6DB33F?style=for-the-badge&logo=spring&logoColor=white"/>
-<img src="https://img.shields.io/badge/Spring%20Boot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white"/>
+<img src="https://img.shields.io/badge/C-00599C?style=for-the-badge&logo=c&logoColor=white"/>
+
 
 #### Database
 <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white"/>
+<img src="https://img.shields.io/badge/DBeaver-382923?style=for-the-badge&logo=dbeaver&logoColor=white"/>
 
 #### Tools
 <img src="https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white"/>
@@ -30,24 +22,15 @@ Source code for the **[Course_Name]** course
 
 #### AI Agent
 <img src="https://img.shields.io/badge/GitHub%20Copilot-22272E?style=for-the-badge&logo=githubcopilot&logoColor=white"/>
+<img src="https://img.shields.io/badge/Claude_Code-D97757?style=for-the-badge&logo=anthropic&logoColor=white"/>
 
 #### Platforms
-<img src="https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black"/>
 <img src="https://img.shields.io/badge/macOS-000000?style=for-the-badge&logo=apple&logoColor=white"/>
-<img src="https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white"/>
 
 ---
 ## Project Overview
-**Course:** [COURSE_NAME]  
-**University:** Tech University of Korea (TUK)
 
-This repository contains practice code created while studying [SUBJECT_NAME].
-
-The purpose of this project is to:
-
-- practice core concepts of [TECHNOLOGY]
-- organize lecture exercises
-- build a structured learning record
+This repository contains practice code created for manage my TermProject
 
 ---
 
@@ -55,30 +38,17 @@ The purpose of this project is to:
 
 ### Language
 
-- Java
-- JSP
-- Servlet
-- Python
 - C
-- JavaScript
-
-### Framework
-
-- Spring
-- Spring Boot
 
 ### Database
 
 - MySQL
+- DBeaver
 
 ### Server
 
 - Apache Tomcat
 
-### Build Tool
-
-- Maven
-- Gradle
 
 ### Tools
 
@@ -89,34 +59,40 @@ The purpose of this project is to:
 
 ### Platform
 
-- Linux
+
 - macOS
-- Windows
 
 
 ---
 
-## Features
-
-This repository includes examples that demonstrate:
-
-- [FEATURE_1]
-- [FEATURE_2]
-- [FEATURE_3]
-- [FEATURE_4]
-
-
 ## Project Structure
 
 ```
-[PROJECT_NAME]/
-├── Chap_[01]/                #
-├── Chap_[02]/                #
-├── Chap_[03]/                # 
-├── ...
-├── LICENSE     # MIT License
+자료구조_기말프로젝트/
+├── include/        # Header-only data structure library
+│   ├── ds.h        # Umbrella header (include this in your source)
+│   ├── stack.h
+│   ├── queue.h
+│   ├── deque.h
+│   ├── list.h
+│   ├── graph.h
+│   └── tree.h
+├── src/            # Source files
+│   ├── main.c
+│   └── example.c   # Usage reference
+├── doc/            # Documentation
+│   └── description.md
+├── Makefile
+├── LICENSE
 ├── .gitignore
 └── README.md
+```
+
+## Build
+
+```bash
+make        # build → bin/main
+make clean  # remove build artifacts
 ```
 
 ---
@@ -133,4 +109,4 @@ Name: Jiyong Kim (ZYONGE)
 Profile: https://github.com/ZYONGE  
 
 ## Motivation
-To build a foundational understanding of [learning_goal] through structured practice and experimentation.
+To Get A+!!!!
