@@ -8,11 +8,6 @@
 
 <img src="https://img.shields.io/badge/C-00599C?style=for-the-badge&logo=c&logoColor=white"/>
 
-
-#### Database
-<img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white"/>
-<img src="https://img.shields.io/badge/DBeaver-382923?style=for-the-badge&logo=dbeaver&logoColor=white"/>
-
 #### Tools
 <img src="https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white"/>
 <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white"/>
@@ -30,7 +25,7 @@
 ---
 ## Project Overview
 
-This repository contains practice code created for manage my TermProject
+Project design and Source code created for the final project of Data Structures course at University.
 
 ---
 
@@ -40,16 +35,6 @@ This repository contains practice code created for manage my TermProject
 
 - C
 
-### Database
-
-- MySQL
-- DBeaver
-
-### Server
-
-- Apache Tomcat
-
-
 ### Tools
 
 - Git
@@ -58,7 +43,6 @@ This repository contains practice code created for manage my TermProject
 - Visual Studio Code
 
 ### Platform
-
 
 - macOS
 
@@ -91,12 +75,10 @@ This repository contains practice code created for manage my TermProject
 ## Build
 
 ```bash
-make        # build → bin/main
-make clean  # remove build artifacts
+gcc -o main src/main.c
+./main
 ```
-
 ---
-
 ## License
 
 This project is licensed under the MIT License.
@@ -109,4 +91,4 @@ Name: Jiyong Kim (ZYONGE)
 Profile: https://github.com/ZYONGE  
 
 ## Motivation
-To Get A+!!!!
+To Get A+ !!!!
