@@ -12,6 +12,10 @@ Thumbs.db
 /target/
 /build/
 
+# Compiled binaries (build artifacts)
+*.exe
+*.o
+
 # Logs and temp files
 *.log
 *.tmp
