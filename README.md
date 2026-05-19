@@ -132,8 +132,7 @@ DFS(깊이 우선 탐색)로 기준점에서 목표 인물까지의 경로를 �
 ## Build
 
 ```bash
-make
-./build/main
+./build/family_tree
 ```
 
 ---
@@ -153,4 +152,4 @@ Profile: https://github.com/ZYONGE
 
 ## Motivation
 
-A+을 위하여 !!!!
+A+를 위하여 !!!!
