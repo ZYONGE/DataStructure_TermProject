@@ -2,10 +2,6 @@
 .DS_Store
 Thumbs.db
 
-# Java build files
-*.class
-*.jar
-
 # IDE specific
 .idea/
 .vscode/
