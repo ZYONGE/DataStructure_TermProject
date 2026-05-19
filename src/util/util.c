@@ -58,6 +58,17 @@ int getTermRows(void) {
 void setupTerminal(void) {
     SetConsoleOutputCP(65001);
     SetConsoleCP(65001);
+    SetConsoleTitleA("\xEC\xB4\x8C\xEC\x88\x98 \xEA\xB3\x84\xEC\xB0\xB8\xEA\xB8\xB0");
+
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    /* 버퍼를 창보다 먼저 크게 잡아야 창 크기 조정이 성공한다 */
+    COORD bufSize = { 80, 200 };
+    SetConsoleScreenBufferSize(hOut, bufSize);
+
+    /* UI 최소 크기: 80열 × 32행 */
+    SMALL_RECT winRect = { 0, 0, 79, 31 };
+    SetConsoleWindowInfo(hOut, TRUE, &winRect);
 }
 void restoreTerminal(void) { showCursor(); resetColor(); }
 void flushInput(void)      { FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE)); }

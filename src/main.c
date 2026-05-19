@@ -5,8 +5,6 @@
 #include <unistd.h>   /* isatty */
 #endif
 
-#include "../include/ds.h"
-
 #include "family/person.h"
 #include "family/family_tree.h"
 #include "algorithm/dfs.h"
@@ -15,6 +13,7 @@
 #include "ui/ui.h"
 #include "ui/deque_view.h"
 #include "util/util.h"
+#include "option.h"
 
 /* ── 전역 상태 ───────────────────────────────────────────────────── */
 static Person *g_self = NULL;   /* 기준 인물 (나) */
@@ -51,13 +50,15 @@ static void readLine(const char *prompt, char *buf, int size) {
     hideCursor();
 }
 
+/* 성별 입력: 1=남성, 2=여성. 반환값 0은 입력 취소를 의미한다. */
 static char readGender(void) {
     char buf[8];
     while (1) {
-        readLine("성별 (M/F): ", buf, sizeof(buf));
-        if (buf[0] == 'M' || buf[0] == 'm') return 'M';
-        if (buf[0] == 'F' || buf[0] == 'f') return 'F';
-        printMain(2, "M 또는 F 를 입력하세요.");
+        readLine("성별 (1=남성 / 2=여성 / 0=취소): ", buf, sizeof(buf));
+        if (buf[0] == '0') return 0;   /* 취소 */
+        if (buf[0] == '1') return 'M';
+        if (buf[0] == '2') return 'F';
+        printMain(2, "1(남성) 또는 2(여성)를 입력하세요.");
     }
 }
 
@@ -74,27 +75,36 @@ static int readAge(void) {
 static void menuAdd(void) {
     clearMainArea();
     printMain(0, "=== 구성원 추가 ===");
+    if (!g_self)
+        printMain(1, "입력 순서: 본인 → 부모 → 조부모 → 기타 순으로 등록하세요.");
+    else
+        printMain(1, "TIP: '0' 입력으로 언제든지 취소할 수 있습니다.");
 
     char name[50], relName[50], relBuf[4];
 
-    readLine("새 구성원 이름: ", name, sizeof(name));
-    if (name[0] == '\0') return;
+    readLine("새 구성원 이름 (0=취소): ", name, sizeof(name));
+    if (name[0] == '\0' || name[0] == '0') { printMain(3, "취소되었습니다."); return; }
 
     char gender = readGender();
+    if (gender == 0) { printMain(3, "취소되었습니다."); return; }
+
     int  age    = readAge();
 
     if (!g_self) {
         g_self = createPerson(name, gender, age);
-        printMain(3, "[%s] 을(를) 기준 인물로 등록했습니다.", name);
+        printMain(3, "[%s] 을(를) 기준 인물(나)로 등록했습니다.", name);
+        printMain(4, "다음으로 부모님을 등록해보세요!");
         dequeViewUpdate(g_self, -1);
         return;
     }
 
     printMain(3, "관계: 1.자녀  2.부모  3.배우자");
-    readLine("선택: ", relBuf, sizeof(relBuf));
+    readLine("선택 (0=취소): ", relBuf, sizeof(relBuf));
+    if (relBuf[0] == '0') { printMain(5, "취소되었습니다."); return; }
     int rel = atoi(relBuf);
 
     readLine("연결할 기존 구성원 이름: ", relName, sizeof(relName));
+    if (relName[0] == '0') { printMain(5, "취소되었습니다."); return; }
     Person *existing = findPerson(g_self, relName);
     if (!existing) {
         printMain(5, "'%s' 을(를) 찾을 수 없습니다.", relName);
@@ -227,8 +237,10 @@ static void menuChonsu(void) {
     printMain(0, "=== 촌수 계산 ===");
 
     char name1[50], name2[50];
-    readLine("첫 번째 사람 이름: ", name1, sizeof(name1));
-    readLine("두 번째 사람 이름: ", name2, sizeof(name2));
+    readLine("첫 번째 사람 이름 (0=취소): ", name1, sizeof(name1));
+    if (name1[0] == '0') { printMain(2, "취소되었습니다."); return; }
+    readLine("두 번째 사람 이름 (0=취소): ", name2, sizeof(name2));
+    if (name2[0] == '0') { printMain(2, "취소되었습니다."); return; }
 
     Person *p1 = findPerson(g_self, name1);
     Person *p2 = findPerson(g_self, name2);
@@ -242,17 +254,19 @@ static void menuChonsu(void) {
         return;
     }
 
-    int chonsu = len - 1;
-    if (len == 2 && p1->spouse == p2) chonsu = 0;
+    int chonsu = computeChonsu(path, len);
 
-    printMain(3, "[%s] 와(과) [%s] 는 %d촌입니다.", name1, name2, chonsu);
+    if (chonsu == 0)
+        printMain(3, "[%s] 와(과) [%s] 는 무촌(배우자)입니다.", name1, name2);
+    else
+        printMain(3, "[%s] 와(과) [%s] 는 %d촌입니다.", name1, name2, chonsu);
 
     /* 경로 출력 */
     char pathStr[512] = {0};
     for (int i = 0; i < len; i++) {
         strncat(pathStr, path[i]->name, sizeof(pathStr) - strlen(pathStr) - 1);
         if (i < len - 1)
-            strncat(pathStr, "→", sizeof(pathStr) - strlen(pathStr) - 1);
+            strncat(pathStr, "->", sizeof(pathStr) - strlen(pathStr) - 1);
     }
     printMain(4, "경로: %s", pathStr);
 }
@@ -264,7 +278,8 @@ static void menuRelation(void) {
     if (!g_self) { printMain(1, "기준 인물이 없습니다."); return; }
 
     char name[50];
-    readLine("상대방 이름: ", name, sizeof(name));
+    readLine("상대방 이름 (0=취소): ", name, sizeof(name));
+    if (name[0] == '0') { printMain(2, "취소되었습니다."); return; }
     Person *target = findPerson(g_self, name);
     if (!target) { printMain(2, "'%s' 을(를) 찾을 수 없습니다.", name); return; }
 
@@ -274,13 +289,19 @@ static void menuRelation(void) {
 
     const char *rel1 = getRelation(g_self, target, path, len);
     const char *rel2 = getRelationReverse(g_self, target, path, len);
+    int chonsu = computeChonsu(path, len);
 
-    int chonsu = len - 1;
-    if (len == 2 && g_self->spouse == target) chonsu = 0;
+    if (chonsu == 0)
+        printMain(2, "무촌 (배우자)");
+    else
+        printMain(2, "%d촌", chonsu);
 
-    printMain(2, "%d촌", chonsu);
-    printMain(3, "나 → [%s] : %s", name, rel1);
-    printMain(4, "[%s] → 나 : %s", name, rel2);
+    printMain(3, "나 -> [%s] : %s", name, rel1);
+    printMain(4, "[%s] -> 나 : %s", name, rel2);
+
+    /* 짧은 관계 메시지 */
+    const char *msg = getRelationMessage(rel1);
+    if (msg) printMain(6, ">> %s", msg);
 }
 
 /* 7. 초기화 */
@@ -301,7 +322,12 @@ static void menuReset(void) {
 
 int main(void) {
     initUI();
-    printMain(0, "촌수 계산기에 오신 것을 환영합니다!");
+
+    /* 친가 / 외가 선택 */
+    selectFamilySide();
+
+    clearMainArea();
+    printMain(0, "[%s] 촌수 계산기에 오신 것을 환영합니다!", getFamilySideName());
     printMain(1, "1번을 눌러 처음 구성원(나)을 등록하세요.");
 
     while (1) {

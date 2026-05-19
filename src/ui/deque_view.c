@@ -20,35 +20,85 @@ static const int deque_rows[3] = { ROW_GRAND_DEQUE, ROW_PARENT_DEQUE, ROW_SELF_D
 
 /* ── 세대 수집 헬퍼 ──────────────────────────────────────────── */
 
-/* self 의 조부모 세대 수집: self->parent->parent 와 그 형제자매 */
+/* 덱에 이미 있는지 확인 */
+static int dequeContains(Deque *deque, Person *p) {
+    for (int i = 0; i < deque->size; i++) {
+        int idx = (deque->front + i) % DEQUE_MAX_SIZE;
+        if (deque->data[idx] == p) return 1;
+    }
+    return 0;
+}
+
+/* person 한 명(및 배우자)을 나이 기준으로 덱에 삽입 */
+static void insertToDeque(Deque *deque, Person *p) {
+    if (!p || dequeIsFull(deque) || dequeContains(deque, p)) return;
+    if (dequeIsEmpty(deque) || p->age >= dequePeekFront(deque)->age)
+        dequePushFront(deque, p);
+    else
+        dequePushBack(deque, p);
+
+    /* 배우자도 바로 뒤에 삽입 */
+    if (p->spouse && !dequeIsFull(deque) && !dequeContains(deque, p->spouse))
+        dequePushBack(deque, p->spouse);
+}
+
+/* anchor 의 형제자매(+ 배우자)를 덱에 수집 */
 static void collectGeneration(Person *anchor, Deque *deque) {
     initDeque(deque);
     if (!anchor) return;
 
-    /* anchor 의 가장 왼쪽 형제로 이동 */
     Person *leftmost = anchor;
     while (leftmost->prev) leftmost = leftmost->prev;
 
-    /* 형제자매 전체를 나이 기준으로 덱에 삽입 */
     Person *cur = leftmost;
     while (cur) {
-        if (!dequeIsFull(deque)) {
-            if (dequeIsEmpty(deque) || cur->age >= dequePeekFront(deque)->age)
-                dequePushFront(deque, cur);
-            else
-                dequePushBack(deque, cur);
-        }
-        /* 배우자도 함께 (쌍으로 표시) */
-        if (cur->spouse && !dequeIsFull(deque)) {
-            /* 이미 삽입된 배우자인지 확인 */
-            int found = 0;
-            for (int i = 0; i < deque->size; i++) {
-                int idx = (deque->front + i) % DEQUE_MAX_SIZE;
-                if (deque->data[idx] == cur->spouse) { found = 1; break; }
-            }
-            if (!found) dequePushBack(deque, cur->spouse);
-        }
+        insertToDeque(deque, cur);
         cur = cur->next;
+    }
+}
+
+/*
+ * 본인 세대 수집: 본인·형제자매 + 사촌(부모의 형제자매의 자녀)
+ * 사촌은 부모 세대 형제자매 각각의 child 리스트를 순회해서 모은다.
+ */
+static void collectSelfGeneration(Person *self, Deque *deque) {
+    initDeque(deque);
+    if (!self) return;
+
+    /* 1. 본인과 형제자매 */
+    Person *leftmost = self;
+    while (leftmost->prev) leftmost = leftmost->prev;
+    Person *cur = leftmost;
+    while (cur) {
+        insertToDeque(deque, cur);
+        cur = cur->next;
+    }
+
+    /* 2. 사촌: 부모의 형제자매(삼촌/고모 등)의 자녀들 */
+    if (!self->parent) return;
+
+    /* 부모의 가장 왼쪽 형제로 이동 */
+    Person *parentSib = self->parent;
+    while (parentSib->prev) parentSib = parentSib->prev;
+
+    while (parentSib) {
+        /* 내 직접 부모는 이미 1번에서 처리 */
+        if (parentSib != self->parent) {
+            Person *cousin = parentSib->child;
+            while (cousin) {
+                insertToDeque(deque, cousin);
+                cousin = cousin->next;
+            }
+        }
+        /* 부모 형제의 배우자 쪽 자녀도 포함 */
+        if (parentSib->spouse && parentSib->spouse != self->parent) {
+            Person *cousin = parentSib->spouse->child;
+            while (cousin) {
+                insertToDeque(deque, cousin);
+                cousin = cousin->next;
+            }
+        }
+        parentSib = parentSib->next;
     }
 }
 
@@ -126,9 +176,9 @@ void dequeViewUpdate(Person *self, int generation) {
         renderDequeRow(1, self);
     }
 
-    /* 본인 세대: self */
+    /* 본인 세대: self + 사촌 */
     if (generation == 2 || generation == -1) {
-        collectGeneration(self, &g_deques[2]);
+        collectSelfGeneration(self, &g_deques[2]);
         renderDequeRow(2, self);
     }
 }

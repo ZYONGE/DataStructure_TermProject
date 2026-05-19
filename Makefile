@@ -2,6 +2,7 @@ CC      = gcc
 CFLAGS  = -std=c11 -Wall -Wextra -Wno-unused-function -Iinclude -Isrc
 
 SRCS    = src/main.c                    \
+          src/option.c                  \
           src/family/family_tree.c      \
           src/algorithm/dfs.c           \
           src/algorithm/relation.c      \
@@ -11,26 +12,19 @@ SRCS    = src/main.c                    \
           src/util/util.c
 
 ifeq ($(OS),Windows_NT)
-    TARGET  = build/family_tree.exe
-    LDFLAGS =
+    TARGET  = family_tree.exe
+    LDFLAGS = -static
 else
-    TARGET  = build/family_tree
+    TARGET  = family_tree
     LDFLAGS =
 endif
 
 all: $(TARGET)
 
-$(TARGET): $(SRCS) | build
+$(TARGET): $(SRCS)
 	$(CC) $(CFLAGS) -o $@ $(SRCS) $(LDFLAGS)
 
-build:
-	mkdir -p build
-
 clean:
-ifeq ($(OS),Windows_NT)
-	del /Q build\*
-else
-	rm -rf build/
-endif
+	rm -f family_tree.exe family_tree
 
 .PHONY: all clean

@@ -124,19 +124,6 @@ static void stackDisplay(Stack *stack) {
     printf(" -> BOTTOM  (크기: %d)\n", stack->size);
 }
 
-// ─── 파일 가져오기 ────────────────────────────────────────────────────────────
-
-static void stackImport(Stack *stack, const char *filename) {
-    FILE *fp = fopen(filename, "r");
-    if (!fp) { fprintf(stderr, "[Stack] 파일 열기 실패: %s\n", filename); return; }
-    Element data;
-    while (fscanf(fp, ELEMENT_FORMAT, &data) == 1) {
-        stackPush(stack, data);
-    }
-    fclose(fp);
-    printf("[Stack] '%s' 에서 데이터 가져오기 완료  (크기: %d)\n", filename, stack->size);
-}
-
 // ─── 메모리 해제 ─────────────────────────────────────────────────────────────
 
 static void stackFree(Stack *stack) {

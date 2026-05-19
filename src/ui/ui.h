@@ -3,35 +3,35 @@
 
 /* ── 화면 레이아웃 상수 ──────────────────────────────────────────
  *
- *  열(x): 0 ~ UI_WIDTH-1
- *  행(y): 0 ~ UI_HEIGHT-1
+ *  UI_TOP 만큼 아래에서 시작하므로 터미널 위쪽 여백이 생긴다.
  *
- *  Row 0        : 상단 테두리 ╔═══╗
- *  Row 1        : 조부모 세대 헤더
- *  Row 2        : 조부모 덱 뷰
- *  Row 3        : 구분선 ╠═══╣
- *  Row 4        : 부모 세대 헤더
- *  Row 5        : 부모 덱 뷰
- *  Row 6        : 구분선 ╠═══╣
- *  Row 7        : 본인 세대 헤더
- *  Row 8        : 본인 덱 뷰
- *  Row 9        : 구분선 ╠══╦══╣
- *  Row 10       : MENU 헤더 / MAIN 헤더
- *  Row 11~27    : MENU 내용 / MAIN 내용
- *  Row 28       : 하단 테두리 ╚══╩══╝
+ *  Row UI_TOP+0  : 상단 테두리 ╔═══╗
+ *  Row UI_TOP+1  : 조부모 세대 헤더
+ *  Row UI_TOP+2  : 조부모 덱 뷰
+ *  Row UI_TOP+3  : 구분선 ╠═══╣
+ *  Row UI_TOP+4  : 부모 세대 헤더
+ *  Row UI_TOP+5  : 부모 덱 뷰
+ *  Row UI_TOP+6  : 구분선 ╠═══╣
+ *  Row UI_TOP+7  : 본인 세대 헤더
+ *  Row UI_TOP+8  : 본인 덱 뷰
+ *  Row UI_TOP+9  : 구분선 ╠══╦══╣
+ *  Row UI_TOP+10 : MENU 헤더 / MAIN 헤더
+ *  Row UI_TOP+11~27 : MENU 내용 / MAIN 내용
+ *  Row UI_TOP+28 : 하단 테두리 ╚══╩══╝
  */
 
+#define UI_TOP        2           /* 상단 여백 (행 수) */
 #define UI_WIDTH      80
-#define UI_HEIGHT     29
+#define UI_HEIGHT     (29 + UI_TOP)
 
 /* 덱 뷰 행 (내용 출력 행) */
-#define ROW_GRAND_DEQUE   2
-#define ROW_PARENT_DEQUE  5
-#define ROW_SELF_DEQUE    8
+#define ROW_GRAND_DEQUE   (UI_TOP + 2)
+#define ROW_PARENT_DEQUE  (UI_TOP + 5)
+#define ROW_SELF_DEQUE    (UI_TOP + 8)
 
 /* 하단 영역 */
-#define ROW_BOTTOM_START  10
-#define ROW_BOTTOM_END    27
+#define ROW_BOTTOM_START  (UI_TOP + 10)
+#define ROW_BOTTOM_END    (UI_TOP + 27)
 
 #define COL_MENU_START    1
 #define COL_MENU_END      15

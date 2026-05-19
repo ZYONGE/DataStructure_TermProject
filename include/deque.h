@@ -138,19 +138,6 @@ static void dequeDisplay(Deque *deque) {
     printf(" ] REAR  (크기: %d)\n", deque->size);
 }
 
-// ─── 파일 가져오기 ────────────────────────────────────────────────────────────
-
-static void dequeImport(Deque *deque, const char *filename) {
-    FILE *fp = fopen(filename, "r");
-    if (!fp) { fprintf(stderr, "[Deque] 파일 열기 실패: %s\n", filename); return; }
-    Element data;
-    while (fscanf(fp, ELEMENT_FORMAT, &data) == 1) {
-        dequePushBack(deque, data);
-    }
-    fclose(fp);
-    printf("[Deque] '%s' 에서 데이터 가져오기 완료  (크기: %d)\n", filename, deque->size);
-}
-
 // ─── 초기화 (비우기) ─────────────────────────────────────────────────────────
 
 static void dequeClear(Deque *deque) {

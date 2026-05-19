@@ -25,55 +25,56 @@ static void hline(int len) {
 
 void drawFrame(void) {
     int W = UI_WIDTH;
+    int T = UI_TOP;   /* 상단 여백 오프셋 */
 
-    /* 행 0: 상단 */
-    gotoxy(0, 0);
+    /* 행 T+0: 상단 */
+    gotoxy(0, T);
     printf(BX_TL); hline(W - 2); printf(BX_TR);
 
-    /* 행 1~2: 조부모 세대 */
-    for (int r = 1; r <= 2; r++) {
+    /* 행 T+1~T+2: 조부모 세대 */
+    for (int r = T+1; r <= T+2; r++) {
         gotoxy(0,     r); printf(BX_V);
         gotoxy(W - 1, r); printf(BX_V);
     }
-    gotoxy(2, 1); printf("[ 조부모 세대 ]");
+    gotoxy(2, T+1); printf("[ 조부모 세대 ]");
 
-    /* 행 3: 구분선 */
-    gotoxy(0, 3); printf(BX_ML); hline(W - 2); printf(BX_MR);
+    /* 행 T+3: 구분선 */
+    gotoxy(0, T+3); printf(BX_ML); hline(W - 2); printf(BX_MR);
 
-    /* 행 4~5: 부모 세대 */
-    for (int r = 4; r <= 5; r++) {
+    /* 행 T+4~T+5: 부모 세대 */
+    for (int r = T+4; r <= T+5; r++) {
         gotoxy(0,     r); printf(BX_V);
         gotoxy(W - 1, r); printf(BX_V);
     }
-    gotoxy(2, 4); printf("[ 부모 세대 ]");
+    gotoxy(2, T+4); printf("[ 부모 세대 ]");
 
-    /* 행 6: 구분선 */
-    gotoxy(0, 6); printf(BX_ML); hline(W - 2); printf(BX_MR);
+    /* 행 T+6: 구분선 */
+    gotoxy(0, T+6); printf(BX_ML); hline(W - 2); printf(BX_MR);
 
-    /* 행 7~8: 본인 세대 */
-    for (int r = 7; r <= 8; r++) {
+    /* 행 T+7~T+8: 본인 세대 */
+    for (int r = T+7; r <= T+8; r++) {
         gotoxy(0,     r); printf(BX_V);
         gotoxy(W - 1, r); printf(BX_V);
     }
-    gotoxy(2, 7); printf("[ 본인 세대 ]");
+    gotoxy(2, T+7); printf("[ 본인 세대 ]");
 
-    /* 행 9: T-junction 구분선 ╠══╦══╣ */
-    gotoxy(0, 9);
+    /* 행 T+9: T-junction 구분선 ╠══╦══╣ */
+    gotoxy(0, T+9);
     printf(BX_ML);
     for (int c = 1; c < COL_DIVIDER; c++) printf(BX_H);
     printf(BX_TT);
     for (int c = COL_DIVIDER + 1; c < W - 1; c++) printf(BX_H);
     printf(BX_MR);
 
-    /* 행 10~27: 메뉴 + 메인 영역 세로선 */
+    /* 행 ROW_BOTTOM_START~ROW_BOTTOM_END: 메뉴 + 메인 영역 세로선 */
     for (int r = ROW_BOTTOM_START; r <= ROW_BOTTOM_END; r++) {
         gotoxy(0,           r); printf(BX_V);
         gotoxy(COL_DIVIDER, r); printf(BX_V);
         gotoxy(W - 1,       r); printf(BX_V);
     }
 
-    /* 행 28: 하단 */
-    gotoxy(0, 28);
+    /* 하단 테두리 */
+    gotoxy(0, T+28);
     printf(BX_BL);
     for (int c = 1; c < COL_DIVIDER; c++) printf(BX_H);
     printf(BX_BT);

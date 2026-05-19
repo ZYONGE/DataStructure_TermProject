@@ -131,8 +131,54 @@ DFS(깊이 우선 탐색)로 기준점에서 목표 인물까지의 경로를 �
 
 ## Build
 
+### Prerequisites
+
+**Windows**
+
+1. [MSYS2](https://www.msys2.org/) 인스톨러를 받아 설치합니다.
+2. 시작 메뉴에서 **"MSYS2 MINGW64"** 를 검색해 실행합니다. (PowerShell/CMD 아님)
+3. MSYS2 MinGW64 터미널 안에서 아래 명령을 실행합니다.
+
+```bash
+pacman -S mingw-w64-x86_64-gcc make
+```
+
+**macOS**
+
+Xcode Command Line Tools를 설치합니다.
+
+```bash
+xcode-select --install
+```
+
+### Compile
+
+프로젝트 루트 디렉터리에서 실행합니다.
+
+```bash
+make
+```
+
+빌드가 완료되면 `build/` 디렉터리에 실행 파일이 생성됩니다.
+
+### Run
+
+**Windows** (MSYS2 MinGW64 터미널)
+
+```bash
+./build/family_tree.exe
+```
+
+**macOS / Linux**
+
 ```bash
 ./build/family_tree
+```
+
+### Clean
+
+```bash
+make clean
 ```
 
 ---
