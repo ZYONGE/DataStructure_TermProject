@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef _WIN32
+#include <unistd.h>   /* isatty */
+#endif
 
 #include "../include/ds.h"
 
@@ -19,12 +22,32 @@ static Person *g_self = NULL;   /* 기준 인물 (나) */
 /* ── 입력 헬퍼 ────────────────────────────────────────────────────── */
 
 static void readLine(const char *prompt, char *buf, int size) {
-    showCursor();
+    /* TTY 인터랙티브 모드에서만 잔여 입력 비우기
+       파이프/리디렉션 시에는 flushInput 을 호출하면 데이터가 유실된다 */
+#ifndef _WIN32
+    if (isatty(STDIN_FILENO)) flushInput();
+#else
+    flushInput();
+#endif
+
+    /* 프롬프트 행 갱신, 입력 행 초기화 */
     printMain(0, "%s", prompt);
+    clearArea(MAIN_X, MAIN_Y + 1, MAIN_W);
+
+    /* 입력 행에 커서 이동 후 대기 */
     gotoxy(MAIN_X, MAIN_Y + 1);
+    setColor(C_GREEN);
+    printf("> ");
+    resetColor();
+    showCursor();
     fflush(stdout);
+
+    buf[0] = '\0';
     if (fgets(buf, size, stdin))
         buf[strcspn(buf, "\n")] = '\0';
+
+    /* 입력 에코 잔상 제거 */
+    clearArea(MAIN_X, MAIN_Y + 1, MAIN_W);
     hideCursor();
 }
 
@@ -298,8 +321,8 @@ int main(void) {
             printMain(0, "프로그램을 종료합니다.");
             fflush(stdout);
             if (g_self) freeAll(g_self);
-            showCursor();
-            gotoxy(0, UI_HEIGHT);
+            restoreTerminal();          /* 커서 복원, 색상 리셋 */
+            gotoxy(0, UI_HEIGHT + 1);   /* 박스 아래로 커서 이동 */
             printf("\n");
             return 0;
         default:

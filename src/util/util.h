@@ -21,4 +21,15 @@ void resetColor(void);
 void clearScreen(void);
 char readKey(void);
 
+/* 초기화 / 정리 */
+void setupTerminal(void);     /* locale 설정, 시그널 핸들러 등록 */
+void restoreTerminal(void);   /* 커서 복원, 색상 리셋 */
+
+/* 터미널 크기 */
+int getTermCols(void);
+int getTermRows(void);
+
+/* stdin 잔여 입력 비우기 */
+void flushInput(void);
+
 #endif /* UTIL_H */

@@ -3,6 +3,9 @@
 #include <string.h>
 #include "ui.h"
 #include "../util/util.h"
+#ifndef _WIN32
+#include <unistd.h>   /* isatty */
+#endif
 
 /* ── 박스 그리기 문자 (UTF-8) ────────────────────────────────────── */
 #define BX_TL  "╔"
@@ -107,9 +110,24 @@ void drawFrame(void) {
 }
 
 void initUI(void) {
-#ifdef _WIN32
-    SetConsoleOutputCP(65001);
+    setupTerminal();    /* locale, 시그널 핸들러 */
+
+    /* 터미널 크기 확인 (실제 TTY 연결 시에만) */
+#ifndef _WIN32
+    if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO)) {
+        int cols = getTermCols();
+        int rows = getTermRows();
+        if (cols < UI_WIDTH || rows < UI_HEIGHT) {
+            printf("\033[33m[경고] 터미널 크기가 최소 %d×%d 필요합니다."
+                   "  현재: %d×%d\033[0m\n",
+                   UI_WIDTH, UI_HEIGHT, cols, rows);
+            printf("터미널을 넓힌 후 Enter를 누르세요...");
+            fflush(stdout);
+            getchar();
+        }
+    }
 #endif
+
     clearScreen();
     hideCursor();
     drawFrame();
@@ -127,8 +145,10 @@ void updateMenuCursor(int selected) {
 
 /* ── MAIN 영역 ────────────────────────────────────────────────── */
 
+/* ROW_BOTTOM_START 행의 [ MAIN ] 헤더는 건드리지 않고
+   MAIN_Y (= ROW_BOTTOM_START+1) 부터 지운다. */
 void clearMainArea(void) {
-    for (int r = ROW_BOTTOM_START; r <= ROW_BOTTOM_END; r++)
+    for (int r = MAIN_Y; r <= ROW_BOTTOM_END; r++)
         clearArea(MAIN_X, r, MAIN_W);
 }
 
