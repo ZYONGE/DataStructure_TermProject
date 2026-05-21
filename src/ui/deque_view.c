@@ -32,7 +32,8 @@ static int dequeContains(Deque *deque, Person *p) {
 /* person 한 명(및 배우자)을 나이 기준으로 덱에 삽입 */
 static void insertToDeque(Deque *deque, Person *p) {
     if (!p || dequeIsFull(deque) || dequeContains(deque, p)) return;
-    if (dequeIsEmpty(deque) || p->age >= dequePeekFront(deque)->age)
+    /* birth_year 작을수록 연상 → 연상을 front로 */
+    if (dequeIsEmpty(deque) || p->birth_year <= dequePeekFront(deque)->birth_year)
         dequePushFront(deque, p);
     else
         dequePushBack(deque, p);
