@@ -62,11 +62,11 @@ static char readGender(void) {
     }
 }
 
-static int readAge(void) {
+static int readBirthYear(void) {
     char buf[16];
-    readLine("나이: ", buf, sizeof(buf));
-    int age = atoi(buf);
-    return (age > 0) ? age : 1;
+    readLine("출생연도 (예: 2004): ", buf, sizeof(buf));
+    int y = atoi(buf);
+    return (y > 1000) ? y : 2000;
 }
 
 /* ── 메뉴 기능 구현 ────────────────────────────────────────────────── */
@@ -88,10 +88,10 @@ static void menuAdd(void) {
     char gender = readGender();
     if (gender == 0) { printMain(3, "취소되었습니다."); return; }
 
-    int  age    = readAge();
+    int  birth_year = readBirthYear();
 
     if (!g_self) {
-        g_self = createPerson(name, gender, age);
+        g_self = createPerson(name, gender, birth_year);
         printMain(3, "[%s] 을(를) 기준 인물(나)로 등록했습니다.", name);
         printMain(4, "다음으로 부모님을 등록해보세요!");
         dequeViewUpdate(g_self, -1);
@@ -111,7 +111,7 @@ static void menuAdd(void) {
         return;
     }
 
-    Person *newP = createPerson(name, gender, age);
+    Person *newP = createPerson(name, gender, birth_year);
 
     if (rel == 1) {
         addChild(existing, newP);
@@ -151,7 +151,7 @@ static void menuEdit(void) {
     Person *p = findPerson(g_self, name);
     if (!p) { printMain(2, "'%s' 을(를) 찾을 수 없습니다.", name); return; }
 
-    printMain(2, "현재: [%s]  %c  %d세", p->name, p->gender, p->age);
+    printMain(2, "현재: [%s]  %c  %d년생", p->name, p->gender, p->birth_year);
 
     char newName[50];
     readLine("새 이름 (그대로: Enter): ", newName, sizeof(newName));
@@ -165,11 +165,11 @@ static void menuEdit(void) {
     if (gBuf[0] == 'M' || gBuf[0] == 'm') p->gender = 'M';
     else if (gBuf[0] == 'F' || gBuf[0] == 'f') p->gender = 'F';
 
-    char ageBuf[8];
-    readLine("새 나이 (그대로: Enter): ", ageBuf, sizeof(ageBuf));
-    if (ageBuf[0] != '\0') { int a = atoi(ageBuf); if (a > 0) p->age = a; }
+    char byBuf[8];
+    readLine("새 출생연도 (그대로: Enter): ", byBuf, sizeof(byBuf));
+    if (byBuf[0] != '\0') { int y = atoi(byBuf); if (y > 1000) p->birth_year = y; }
 
-    printMain(5, "수정 완료: [%s] %c %d세", p->name, p->gender, p->age);
+    printMain(5, "수정 완료: [%s] %c %d년생", p->name, p->gender, p->birth_year);
     dequeViewUpdate(g_self, -1);
 }
 
@@ -219,7 +219,7 @@ static void menuView(void) {
 
         clearArea(MAIN_X, MAIN_Y + printRow, MAIN_W);
         gotoxy(MAIN_X, MAIN_Y + printRow);
-        printf("[%s] %c %d세", cur->name, cur->gender, cur->age);
+        printf("[%s] %c %d년생", cur->name, cur->gender, cur->birth_year);
         if (cur->spouse) printf("  ↔ [%s]", cur->spouse->name);
         if (cur == g_self) { setColor(C_YELLOW); printf(" ★나"); resetColor(); }
         fflush(stdout);
@@ -247,6 +247,12 @@ static void menuChonsu(void) {
     if (!p1) { printMain(3, "'%s' 을(를) 찾을 수 없습니다.", name1); return; }
     if (!p2) { printMain(3, "'%s' 을(를) 찾을 수 없습니다.", name2); return; }
 
+    /* 배우자 사전 체크 */
+    if (p1->spouse == p2 || p2->spouse == p1) {
+        printMain(3, "[%s] 와(과) [%s] 는 배우자(무촌) 관계입니다.", name1, name2);
+        return;
+    }
+
     Person *path[MAX_PATH_LEN];
     int len = findPath(p1, p2, path, MAX_PATH_LEN);
     if (len < 0) {
@@ -255,11 +261,7 @@ static void menuChonsu(void) {
     }
 
     int chonsu = computeChonsu(path, len);
-
-    if (chonsu == 0)
-        printMain(3, "[%s] 와(과) [%s] 는 무촌(배우자)입니다.", name1, name2);
-    else
-        printMain(3, "[%s] 와(과) [%s] 는 %d촌입니다.", name1, name2, chonsu);
+    printMain(3, "[%s] 와(과) [%s] 는 %d촌입니다.", name1, name2, chonsu);
 
     /* 경로 출력 */
     char pathStr[512] = {0};
@@ -283,23 +285,37 @@ static void menuRelation(void) {
     Person *target = findPerson(g_self, name);
     if (!target) { printMain(2, "'%s' 을(를) 찾을 수 없습니다.", name); return; }
 
+    /* 배우자 사전 체크 (design.md §8: blood DFS 와 분리) */
+    if (g_self->spouse == target || target->spouse == g_self) {
+        printMain(2, "배우자 관계");
+        printMain(3, "나 -> [%s] : %s", name, KW_SPOUSE);
+        printMain(4, "[%s] -> 나 : %s", name, KW_SPOUSE);
+        return;
+    }
+
+    /* blood_target 결정: target 이 배우자 노드이면 배우자의 혈족 원본으로 교체 */
+    Person *blood_target = target;
+    int is_spouse_node   = 0;
+    if (target->spouse) {
+        Person *sp_path[MAX_PATH_LEN];
+        int sp_len = findPath(g_self, target->spouse, sp_path, MAX_PATH_LEN);
+        if (sp_len > 0) { blood_target = target->spouse; is_spouse_node = 1; }
+    }
+
     Person *path[MAX_PATH_LEN];
-    int len = findPath(g_self, target, path, MAX_PATH_LEN);
+    int len = findPath(g_self, blood_target, path, MAX_PATH_LEN);
     if (len < 0) { printMain(2, "경로를 찾을 수 없습니다."); return; }
 
-    const char *rel1 = getRelation(g_self, target, path, len);
-    const char *rel2 = getRelationReverse(g_self, target, path, len);
+    const char *blood1 = getRelation(g_self, blood_target, path, len);
+    const char *blood2 = getRelationReverse(g_self, blood_target, path, len);
+    const char *rel1   = is_spouse_node ? applySpouseTable(blood1)        : blood1;
+    const char *rel2   = is_spouse_node ? applyReverseSpouseTable(blood1) : blood2;
     int chonsu = computeChonsu(path, len);
 
-    if (chonsu == 0)
-        printMain(2, "무촌 (배우자)");
-    else
-        printMain(2, "%d촌", chonsu);
-
+    printMain(2, "%d촌", chonsu);
     printMain(3, "나 -> [%s] : %s", name, rel1);
     printMain(4, "[%s] -> 나 : %s", name, rel2);
 
-    /* 짧은 관계 메시지 */
     const char *msg = getRelationMessage(rel1);
     if (msg) printMain(6, ">> %s", msg);
 }
