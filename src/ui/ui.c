@@ -95,7 +95,7 @@ void drawFrame(void) {
         "6. 호칭출력",
         "----------",
         "7. 초기화",
-        "0. 종료",
+        "0. 종료(quit)",
     };
     int nItems = (int)(sizeof(items) / sizeof(items[0]));
     for (int i = 0; i < nItems; i++) {

@@ -43,9 +43,11 @@ int computeChonsu(Person **path, int pathLen) {
 
 const char *applySpouseTable(const char *h) {
     if (!h) return KW_UNKNOWN;
-    if (strcmp(h, KW_BAEKBU) == 0) return KW_BAENGMO;
-    if (strcmp(h, KW_SUKBU)  == 0) return KW_SUNGMO;
-    if (strcmp(h, KW_GOMO)   == 0) return KW_GOMOBU;
+    if (strcmp(h, KW_FATHER)      == 0) return KW_MOTHER;
+    if (strcmp(h, KW_GRANDFATHER) == 0) return KW_GRANDMOTHER;
+    if (strcmp(h, KW_BAEKBU)      == 0) return KW_BAENGMO;
+    if (strcmp(h, KW_SUKBU)       == 0) return KW_SUNGMO;
+    if (strcmp(h, KW_GOMO)        == 0) return KW_GOMOBU;
     return KW_UNKNOWN;
 }
 
@@ -85,7 +87,8 @@ const char *getRelation(Person *me, Person *target,
 
     /* ── §1-2 하향 직계 (X>0, Y=0) — 역방향 계산 시 진입 ────────── */
     if (Y == 0) {
-        /* 구현 범위 외(자녀·손자녀 방향). 역방향 매칭에서만 사용. */
+        if (X == 1) return tM ? KW_SON       : KW_DAUGHTER;
+        if (X == 2) return tM ? KW_GRANDSON  : KW_GRANDDAUGHTER;
         return KW_UNKNOWN;
     }
 

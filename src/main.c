@@ -13,7 +13,6 @@
 #include "ui/ui.h"
 #include "ui/deque_view.h"
 #include "util/util.h"
-#include "option.h"
 
 /* ── 전역 상태 ───────────────────────────────────────────────────── */
 static Person *g_self = NULL;   /* 기준 인물 (나) */
@@ -308,8 +307,11 @@ static void menuRelation(void) {
 
     const char *blood1 = getRelation(g_self, blood_target, path, len);
     const char *blood2 = getRelationReverse(g_self, blood_target, path, len);
-    const char *rel1   = is_spouse_node ? applySpouseTable(blood1)        : blood1;
-    const char *rel2   = is_spouse_node ? applyReverseSpouseTable(blood1) : blood2;
+    const char *rel1   = is_spouse_node ? applySpouseTable(blood1) : blood1;
+    /* 역방향 배우자 호칭: 전용 테이블에 없으면(KW_UNKNOWN) 혈족 역방향(blood2)으로 대체
+     * 예) 조모→나 = applyReverseSpouseTable("조부") → KW_UNKNOWN → blood2("손자") 사용 */
+    const char *rev_sp = is_spouse_node ? applyReverseSpouseTable(blood1) : KW_UNKNOWN;
+    const char *rel2   = (strcmp(rev_sp, KW_UNKNOWN) == 0) ? blood2 : rev_sp;
     int chonsu = computeChonsu(path, len);
 
     printMain(2, "%d촌", chonsu);
@@ -339,12 +341,10 @@ static void menuReset(void) {
 int main(void) {
     initUI();
 
-    /* 친가 / 외가 선택 */
-    selectFamilySide();
-
     clearMainArea();
-    printMain(0, "[%s] 촌수 계산기에 오신 것을 환영합니다!", getFamilySideName());
-    printMain(1, "1번을 눌러 처음 구성원(나)을 등록하세요.");
+    printMain(0, "친가(아버지 가계) 촌수 계산기");
+    printMain(1, "지원 범위: 조부모까지 3대 / 4촌 이내 / 친가 전용");
+    printMain(2, "1번을 눌러 처음 구성원(나)을 등록하세요.");
 
     while (1) {
         updateMenuCursor(0);
@@ -358,15 +358,21 @@ int main(void) {
         case '5': menuChonsu();   break;
         case '6': menuRelation(); break;
         case '7': menuReset();    break;
-        case '0':
+        case '0': {
             clearMainArea();
-            printMain(0, "프로그램을 종료합니다.");
-            fflush(stdout);
-            if (g_self) freeAll(g_self);
-            restoreTerminal();          /* 커서 복원, 색상 리셋 */
-            gotoxy(0, UI_HEIGHT + 1);   /* 박스 아래로 커서 이동 */
-            printf("\n");
-            return 0;
+            printMain(0, "종료하려면 'quit'를 입력하세요.");
+            char confirm[16];
+            readLine("확인: ", confirm, sizeof(confirm));
+            if (strcmp(confirm, "quit") == 0) {
+                if (g_self) freeAll(g_self);
+                restoreTerminal();
+                gotoxy(0, UI_HEIGHT + 1);
+                printf("\n");
+                return 0;
+            }
+            printMain(2, "취소되었습니다.");
+            break;
+        }
         default:
             break;
         }
