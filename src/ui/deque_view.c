@@ -29,21 +29,41 @@ static int dequeContains(Deque *deque, Person *p) {
     return 0;
 }
 
-/* person 한 명(및 배우자)을 나이 기준으로 덱에 삽입 */
-static void insertToDeque(Deque *deque, Person *p) {
-    if (!p || dequeIsFull(deque) || dequeContains(deque, p)) return;
-    /* birth_year 작을수록 연상 → 연상을 front로 */
-    if (dequeIsEmpty(deque) || p->birth_year <= dequePeekFront(deque)->birth_year)
-        dequePushFront(deque, p);
-    else
-        dequePushBack(deque, p);
+/*
+ * 혈족 배열(blood[])에 p를 birth_year 오름차순으로 삽입.
+ * 이미 있으면 무시한다.
+ */
+static void insertSortedBlood(Person **blood, int *count, Person *p) {
+    if (!p) return;
+    for (int i = 0; i < *count; i++)
+        if (blood[i] == p) return;
 
-    /* 배우자도 바로 뒤에 삽입 */
-    if (p->spouse && !dequeIsFull(deque) && !dequeContains(deque, p->spouse))
-        dequePushBack(deque, p->spouse);
+    int pos = *count;
+    for (int i = 0; i < *count; i++) {
+        if (p->birth_year < blood[i]->birth_year) { pos = i; break; }
+    }
+    for (int i = *count; i > pos; i--)
+        blood[i] = blood[i - 1];
+    blood[pos] = p;
+    (*count)++;
 }
 
-/* anchor 의 형제자매(+ 배우자)를 덱에 수집 */
+/*
+ * 정렬된 혈족 배열로 덱을 구성한다.
+ * 각 혈족 바로 뒤에 배우자를 삽입하여 쌍이 항상 인접하도록 한다.
+ */
+static void buildDequeFromBlood(Deque *deque, Person **blood, int count) {
+    for (int i = 0; i < count; i++) {
+        if (!dequeIsFull(deque) && !dequeContains(deque, blood[i]))
+            dequePushBack(deque, blood[i]);
+        if (blood[i]->spouse &&
+            !dequeIsFull(deque) &&
+            !dequeContains(deque, blood[i]->spouse))
+            dequePushBack(deque, blood[i]->spouse);
+    }
+}
+
+/* anchor 의 형제자매를 birth_year 순으로 덱에 수집 */
 static void collectGeneration(Person *anchor, Deque *deque) {
     initDeque(deque);
     if (!anchor) return;
@@ -51,56 +71,66 @@ static void collectGeneration(Person *anchor, Deque *deque) {
     Person *leftmost = anchor;
     while (leftmost->prev) leftmost = leftmost->prev;
 
+    Person *blood[DEQUE_MAX_SIZE];
+    int count = 0;
     Person *cur = leftmost;
-    while (cur) {
-        insertToDeque(deque, cur);
+    while (cur && count < DEQUE_MAX_SIZE) {
+        insertSortedBlood(blood, &count, cur);
         cur = cur->next;
     }
+
+    buildDequeFromBlood(deque, blood, count);
 }
 
 /*
  * 본인 세대 수집: 본인·형제자매 + 사촌(부모의 형제자매의 자녀)
- * 사촌은 부모 세대 형제자매 각각의 child 리스트를 순회해서 모은다.
+ * 모든 혈족을 birth_year 기준으로 정렬한 뒤 배우자를 바로 뒤에 배치한다.
  */
 static void collectSelfGeneration(Person *self, Deque *deque) {
     initDeque(deque);
     if (!self) return;
 
+    Person *blood[DEQUE_MAX_SIZE];
+    int count = 0;
+
     /* 1. 본인과 형제자매 */
     Person *leftmost = self;
     while (leftmost->prev) leftmost = leftmost->prev;
     Person *cur = leftmost;
-    while (cur) {
-        insertToDeque(deque, cur);
+    while (cur && count < DEQUE_MAX_SIZE) {
+        insertSortedBlood(blood, &count, cur);
         cur = cur->next;
     }
 
     /* 2. 사촌: 부모의 형제자매(삼촌/고모 등)의 자녀들 */
-    if (!self->parent) return;
+    if (!self->parent) goto build;
 
-    /* 부모의 가장 왼쪽 형제로 이동 */
-    Person *parentSib = self->parent;
-    while (parentSib->prev) parentSib = parentSib->prev;
+    {
+        Person *parentSib = self->parent;
+        while (parentSib->prev) parentSib = parentSib->prev;
 
-    while (parentSib) {
-        /* 내 직접 부모는 이미 1번에서 처리 */
-        if (parentSib != self->parent) {
-            Person *cousin = parentSib->child;
-            while (cousin) {
-                insertToDeque(deque, cousin);
-                cousin = cousin->next;
+        while (parentSib) {
+            if (parentSib != self->parent) {
+                Person *cousin = parentSib->child;
+                while (cousin && count < DEQUE_MAX_SIZE) {
+                    insertSortedBlood(blood, &count, cousin);
+                    cousin = cousin->next;
+                }
             }
-        }
-        /* 부모 형제의 배우자 쪽 자녀도 포함 */
-        if (parentSib->spouse && parentSib->spouse != self->parent) {
-            Person *cousin = parentSib->spouse->child;
-            while (cousin) {
-                insertToDeque(deque, cousin);
-                cousin = cousin->next;
+            /* 부모 형제의 배우자 쪽 자녀도 포함 */
+            if (parentSib->spouse && parentSib->spouse != self->parent) {
+                Person *cousin = parentSib->spouse->child;
+                while (cousin && count < DEQUE_MAX_SIZE) {
+                    insertSortedBlood(blood, &count, cousin);
+                    cousin = cousin->next;
+                }
             }
+            parentSib = parentSib->next;
         }
-        parentSib = parentSib->next;
     }
+
+build:
+    buildDequeFromBlood(deque, blood, count);
 }
 
 /* ── 덱 한 행 출력 ────────────────────────────────────────────── */
@@ -130,7 +160,7 @@ static void renderDequeRow(int gen, Person *self) {
 
         if (p == self) resetColor();
 
-        /* 배우자가 바로 다음 인덱스에 있으면 ─ 로 연결 */
+        /* 배우자가 바로 다음 인덱스에 있으면 ─ 로 연결, 아니면 공백 두 칸 */
         if (i + 1 < dq->size) {
             int nidx = (dq->front + i + 1) % DEQUE_MAX_SIZE;
             Person *next = dq->data[nidx];

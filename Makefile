@@ -2,7 +2,6 @@ CC      = gcc
 CFLAGS  = -std=c11 -Wall -Wextra -Wno-unused-function -Iinclude -Isrc
 
 SRCS    = src/main.c                    \
-          src/option.c                  \
           src/family/family_tree.c      \
           src/algorithm/dfs.c           \
           src/algorithm/relation.c      \

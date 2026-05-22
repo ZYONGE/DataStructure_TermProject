@@ -25,6 +25,12 @@
 #define KW_SUKBU          "숙부(叔父)"   /* 부보다 연하 남자 형제 */
 #define KW_GOMO           "고모(姑母)"   /* 부의 여자 형제 */
 
+/* ── 직계 하향 (역방향 계산 시 진입) ────────────────────────── */
+#define KW_SON            "자(子)"        /* 아들 */
+#define KW_DAUGHTER       "녀(女)"        /* 딸   */
+#define KW_GRANDSON       "손자(孫子)"
+#define KW_GRANDDAUGHTER  "손녀(孫女)"
+
 /* ── 3촌 -1세대 (역방향 전용) ───────────────────────────────── */
 #define KW_JILNAM         "질(姪)"       /* 남조카 */
 #define KW_JILNYEO        "질녀(姪女)"   /* 여조카 */

@@ -147,16 +147,18 @@ static void test_본인(void) {
 
 static void test_1촌(void) {
     printf("\n=== 1촌: 부모 ===\n");
-    check("나(M)→아버지(M)",  나,     아버지, 1, KW_FATHER, KW_UNKNOWN);
-    check("여동생(F)→아버지", 여동생, 아버지, 1, KW_FATHER, KW_UNKNOWN);
+    /* 역방향(아버지→나): 나(M)=자(子), 여동생(F)=녀(女) */
+    check("나(M)→아버지(M)",  나,     아버지, 1, KW_FATHER, KW_SON);
+    check("여동생(F)→아버지", 여동생, 아버지, 1, KW_FATHER, KW_DAUGHTER);
     /* 어머니/할머니는 blood DFS 도달 불가 (spouse 간선 미사용):
      * main.c에서 p1->spouse==p2 사전 체크로 처리 */
 }
 
 static void test_2촌_조부모(void) {
     printf("\n=== 2촌: 조부모 ===\n");
-    check("나→할아버지",     나,     할아버지, 2, KW_GRANDFATHER, KW_UNKNOWN);
-    check("여동생→할아버지", 여동생, 할아버지, 2, KW_GRANDFATHER, KW_UNKNOWN);
+    /* 역방향(할아버지→나): 나(M)=손자(孫子), 여동생(F)=손녀(孫女) */
+    check("나→할아버지",     나,     할아버지, 2, KW_GRANDFATHER, KW_GRANDSON);
+    check("여동생→할아버지", 여동생, 할아버지, 2, KW_GRANDFATHER, KW_GRANDDAUGHTER);
     /* 할머니는 blood DFS 도달 불가 (spouse 간선 미사용) */
 }
 

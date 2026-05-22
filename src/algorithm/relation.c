@@ -43,9 +43,11 @@ int computeChonsu(Person **path, int pathLen) {
 
 const char *applySpouseTable(const char *h) {
     if (!h) return KW_UNKNOWN;
-    if (strcmp(h, KW_BAEKBU) == 0) return KW_BAENGMO;
-    if (strcmp(h, KW_SUKBU)  == 0) return KW_SUNGMO;
-    if (strcmp(h, KW_GOMO)   == 0) return KW_GOMOBU;
+    if (strcmp(h, KW_FATHER)      == 0) return KW_MOTHER;
+    if (strcmp(h, KW_GRANDFATHER) == 0) return KW_GRANDMOTHER;
+    if (strcmp(h, KW_BAEKBU)      == 0) return KW_BAENGMO;
+    if (strcmp(h, KW_SUKBU)       == 0) return KW_SUNGMO;
+    if (strcmp(h, KW_GOMO)        == 0) return KW_GOMOBU;
     return KW_UNKNOWN;
 }
 
@@ -85,7 +87,8 @@ const char *getRelation(Person *me, Person *target,
 
     /* ── §1-2 하향 직계 (X>0, Y=0) — 역방향 계산 시 진입 ────────── */
     if (Y == 0) {
-        /* 구현 범위 외(자녀·손자녀 방향). 역방향 매칭에서만 사용. */
+        if (X == 1) return tM ? KW_SON       : KW_DAUGHTER;
+        if (X == 2) return tM ? KW_GRANDSON  : KW_GRANDDAUGHTER;
         return KW_UNKNOWN;
     }
 
@@ -151,18 +154,18 @@ const char *getRelationMessage(const char *r) {
     if (!r) return NULL;
     if (strcmp(r, KW_FATHER)      == 0) return "아버지 이제야 깨달아요";
     if (strcmp(r, KW_MOTHER)      == 0) return "어머니께 효도합시다.";
-    if (strcmp(r, KW_GRANDFATHER) == 0) return "조부님의 지혜.";
+    if (strcmp(r, KW_GRANDFATHER) == 0) return "조부. 조부 위로 증조부. 증조부 위에 고조부...";
     if (strcmp(r, KW_GRANDMOTHER) == 0) return "할머니 손맛이 그리운 날이 있습니다";
     if (strcmp(r, KW_HYUNG)       == 0) return "이스터에그: 저는 형이 2명이 있습니다.";
     if (strcmp(r, KW_JE)          == 0) return "동생을 괴롭히지 맙시다.";
     if (strcmp(r, KW_JA)          == 0) return "누나!!!";
     if (strcmp(r, KW_MAE)         == 0) return "동생을 괴롭히지 맙시다.";
-    if (strcmp(r, KW_BAEKBU)      == 0) return "사실 요즘 백부라는 말을 누가 쓰겠어요?";
+    if (strcmp(r, KW_BAEKBU)      == 0) return "요즘 백부라는 말을 누가 쓰겠어요?";
     if (strcmp(r, KW_SUKBU)       == 0) return "조카 사랑은 삼촌이 한다.";
     if (strcmp(r, KW_GOMO)        == 0) return "고모고모 열매";
-    if (strcmp(r, KW_BAENGMO)     == 0) return "백모님 안녕하세요.";
-    if (strcmp(r, KW_SUNGMO)      == 0) return "숙모님 안녕하세요.";
-    if (strcmp(r, KW_GOMOBU)      == 0) return "고모부님 안녕하세요.";
-    if (strstr(r, "종") != NULL)        return "사촌이 땅을 사면? 배가 아프다고요!";
+    if (strcmp(r, KW_BAENGMO)     == 0) return "BACK BOO";
+    if (strcmp(r, KW_SUNGMO)      == 0) return "무협지에서의 사숙 또한 이 논리입니다..";
+    if (strcmp(r, KW_GOMOBU)      == 0) return "GO! 모부";
+    if (strstr(r, "종") != NULL)        return "사촌이 땅을 사면 배가 아프다.";
     return NULL;
 }
