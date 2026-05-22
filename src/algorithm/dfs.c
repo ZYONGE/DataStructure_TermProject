@@ -5,11 +5,13 @@
 #define MAX_VISITED 500
 
 /*
- * 재귀 DFS.
- * 형제 포인터(prev/next)를 직접 탐색하지 않고,
- * 부모->자식 리스트 전체를 순회한다.
- * 덕분에 모든 이동이 up/down/spouse 중 하나로 분류되어
- * countSteps 가 정확하게 동작한다.
+ * 혈족 DFS (BLOOD 간선만: parent / child 목록).
+ * spouse 간선은 사용하지 않는다 — design.md 10절 알고리즘 Step 2.
+ *
+ * 형제는 부모→자식 목록 전체를 순회하여 탐색하므로
+ * prev/next 포인터를 직접 경유하지 않는다.
+ * 결과적으로 모든 이동은 up(→parent) 또는 down(→child) 중 하나이며,
+ * LCA 추출이 정확하게 동작한다.
  */
 static int dfsHelper(Person *cur, Person *target,
                      Person **visited, int *vCount,
@@ -25,14 +27,14 @@ static int dfsHelper(Person *cur, Person *target,
     if (cur == target) return pathLen + 1;
 
     int res;
-    /* 부모 */
-    if ((res = dfsHelper(cur->parent, target, visited, vCount, path, pathLen+1, maxLen)) != -1) return res;
-    /* 배우자 */
-    if ((res = dfsHelper(cur->spouse, target, visited, vCount, path, pathLen+1, maxLen)) != -1) return res;
-    /* 자식 리스트 전체 (형제는 부모를 경유하여 탐색됨) */
+    /* 부모 방향 (up) */
+    if ((res = dfsHelper(cur->parent, target, visited, vCount, path, pathLen + 1, maxLen)) != -1)
+        return res;
+    /* 자식 목록 (down) — 형제는 부모 경유로 탐색됨 */
     Person *ch = cur->child;
     while (ch) {
-        if ((res = dfsHelper(ch, target, visited, vCount, path, pathLen+1, maxLen)) != -1) return res;
+        if ((res = dfsHelper(ch, target, visited, vCount, path, pathLen + 1, maxLen)) != -1)
+            return res;
         ch = ch->next;
     }
 

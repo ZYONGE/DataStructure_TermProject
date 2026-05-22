@@ -3,27 +3,25 @@
 #include <string.h>
 #include "family_tree.h"
 
-Person *createPerson(const char *name, char gender, int age) {
+Person *createPerson(const char *name, char gender, int birth_year) {
     Person *p = (Person *)malloc(sizeof(Person));
     if (!p) { fprintf(stderr, "메모리 할당 실패\n"); exit(1); }
     strncpy(p->name, name, sizeof(p->name) - 1);
     p->name[sizeof(p->name) - 1] = '\0';
-    p->gender = gender;
-    p->age    = age;
+    p->gender     = gender;
+    p->birth_year = birth_year;
     p->parent = p->child = p->prev = p->next = p->spouse = NULL;
     return p;
 }
 
-/* parent의 자식 목록 맨 뒤에 child 삽입 (이중연결리스트) */
 void addChild(Person *parent, Person *child) {
     child->parent = parent;
-    child->prev = child->next = NULL;
+    child->prev   = child->next = NULL;
 
     if (!parent->child) {
         parent->child = child;
         return;
     }
-
     Person *last = parent->child;
     while (last->next) last = last->next;
     last->next  = child;
@@ -35,7 +33,7 @@ void addSpouse(Person *a, Person *b) {
     b->spouse = a;
 }
 
-/* ─── 탐색 (그래프 DFS, 방문 배열 사용) ───────────────────────────── */
+/* ─── 탐색 ─────────────────────────────────────────────────────────── */
 
 #define MAX_MEMBERS 500
 
@@ -68,17 +66,14 @@ Person *findPerson(Person *any, const char *name) {
 
 int removePerson(Person *any, Person *target) {
     if (!target) return 0;
-    if (target->child) return 0;  /* 자식 있으면 삭제 불가 */
+    if (target->child) return 0;
 
-    /* 형제자매 연결 해제 */
     if (target->prev) target->prev->next = target->next;
     if (target->next) target->next->prev = target->prev;
 
-    /* 부모의 child 포인터 갱신 */
     if (target->parent && target->parent->child == target)
         target->parent->child = target->next;
 
-    /* 배우자 연결 해제 */
     if (target->spouse) target->spouse->spouse = NULL;
 
     (void)any;
@@ -88,9 +83,7 @@ int removePerson(Person *any, Person *target) {
 
 /* ─── 메모리 해제 ────────────────────────────────────────────────────── */
 
-void freePerson(Person *p) {
-    free(p);
-}
+void freePerson(Person *p) { free(p); }
 
 static void freeHelper(Person *cur, Person **visited, int *vCount) {
     if (!cur) return;
@@ -119,7 +112,7 @@ void freeAll(Person *any) {
 void printTree(Person *root, int depth) {
     if (!root) return;
     for (int i = 0; i < depth * 2; i++) putchar(' ');
-    printf("[%s(%c/%d)]", root->name, root->gender, root->age);
+    printf("[%s(%c/%d)]", root->name, root->gender, root->birth_year);
     if (root->spouse) printf("─[%s]", root->spouse->name);
     putchar('\n');
     Person *ch = root->child;

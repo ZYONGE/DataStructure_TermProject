@@ -7,7 +7,11 @@
  *  Windows 구현
  * ══════════════════════════════════════════════════════════════════ */
 #ifdef _WIN32
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0600   /* Vista+: CONSOLE_FONT_INFOEX */
+#endif
 #include <windows.h>
+#include <wchar.h>
 #include <conio.h>
 
 void gotoxy(int x, int y) {
@@ -61,6 +65,21 @@ void setupTerminal(void) {
     SetConsoleTitleA("\xEC\xB4\x8C\xEC\x88\x98 \xEA\xB3\x84\xEC\xB0\xB8\xEA\xB8\xB0");
 
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    /* 한글 폰트 설정: 굴림체는 CJK 문자를 2칸 너비로 올바르게 렌더링 */
+    CONSOLE_FONT_INFOEX cfi;
+    memset(&cfi, 0, sizeof(cfi));
+    cfi.cbSize      = sizeof(cfi);
+    cfi.dwFontSize.Y = 18;
+    cfi.FontFamily  = FF_DONTCARE;
+    cfi.FontWeight  = FW_NORMAL;
+    wcsncpy(cfi.FaceName, L"굴림체", LF_FACESIZE - 1); /* 굴림체 */
+    SetCurrentConsoleFontEx(hOut, FALSE, &cfi);
+
+    /* VTP 활성화: ANSI 이스케이프 시퀀스 지원 */
+    DWORD dwMode = 0;
+    if (GetConsoleMode(hOut, &dwMode))
+        SetConsoleMode(hOut, dwMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
 
     /* 버퍼를 창보다 먼저 크게 잡아야 창 크기 조정이 성공한다 */
     COORD bufSize = { 80, 200 };

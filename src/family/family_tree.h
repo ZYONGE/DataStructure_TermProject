@@ -4,9 +4,9 @@
 #include "person.h"
 
 /* 노드 생성 / 해제 */
-Person *createPerson(const char *name, char gender, int age);
+Person *createPerson(const char *name, char gender, int birth_year);
 void    freePerson(Person *p);
-void    freeAll(Person *any);       /* 연결된 모든 노드 해제 */
+void    freeAll(Person *any);
 
 /* 트리 조작 */
 void addChild(Person *parent, Person *child);
@@ -18,7 +18,7 @@ int  removePerson(Person *any, Person *target);
 /* 탐색 */
 Person *findPerson(Person *any, const char *name);
 
-/* 유틸리티 */
-void printTree(Person *root, int depth); /* 디버그용 트리 출력 */
+/* 디버그 출력 */
+void printTree(Person *root, int depth);
 
 #endif /* FAMILY_TREE_H */

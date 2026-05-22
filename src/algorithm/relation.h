@@ -4,23 +4,38 @@
 #include "../family/person.h"
 
 /*
- * path[0]=self ~ path[pathLen-1]=target 경로를 받아
- * self 기준 한국어 호칭 문자열을 반환한다.
- * 4촌 이내만 처리하며, 범위 초과 시 "미상" 반환.
+ * path[0]=me ~ path[pathLen-1]=target 경로(혈족 DFS 결과)를 받아
+ * me 기준 한국어 호칭 문자열을 반환한다.
+ *
+ * 배우자 호칭이 필요한 경우 getRelation 호출 전에
+ * 호출자가 target->spouse 여부를 확인하고 blood_target으로 교체한 뒤
+ * applySpouseTable 로 후처리한다.
  */
-const char *getRelation(Person *self, Person *target,
+const char *getRelation(Person *me, Person *target,
                         Person **path, int pathLen);
 
 /*
- * target 기준 self 에 대한 호칭 (역방향)
+ * target 기준 me 에 대한 호칭 (역방향).
+ * path 를 반전시켜 getRelation 을 재호출한다.
  */
-const char *getRelationReverse(Person *self, Person *target,
+const char *getRelationReverse(Person *me, Person *target,
                                Person **path, int pathLen);
 
 /*
- * 경로로부터 촌수를 계산한다.
- * 형제 포인터(prev/next) 이동을 1up+1down으로 처리하므로
- * pathLen-1 대신 이 함수를 사용해야 정확하다.
+ * 혈족 호칭 → 배우자 호칭 교체 테이블 (design.md §8).
+ * 매칭되지 않으면 KW_UNKNOWN 반환.
+ */
+const char *applySpouseTable(const char *blood_hoching);
+
+/*
+ * 혈족 호칭(역방향) → 역방향 배우자 호칭 교체.
+ * 예: 백부→나(질) 관계에서 백모→나 = 생질.
+ */
+const char *applyReverseSpouseTable(const char *blood_reverse_hoching);
+
+/*
+ * 촌수 계산: X + Y.
+ * path 가 NULL 이거나 배우자 관계이면 0 반환.
  */
 int computeChonsu(Person **path, int pathLen);
 
