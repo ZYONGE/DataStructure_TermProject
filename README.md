@@ -175,6 +175,8 @@ Y = 2  (LCA → 종형 내려간 세대)
 ├── docs/
 │   ├── design.md         # 알고리즘 설계 문서 (구현 기준)
 │   └── script.md         # 개발 인계 문서
+├── .vscode/
+│   └── tasks.json        # VS Code 빌드 태스크 (Ctrl+Shift+B)
 ├── Makefile
 ├── LICENSE
 ├── .gitignore
@@ -185,7 +187,7 @@ Y = 2  (LCA → 종형 내려간 세대)
 
 ## Build
 
-### Prerequisites
+### 사전 준비 (최초 1회)
 
 **macOS**
 
@@ -193,41 +195,107 @@ Y = 2  (LCA → 종형 내려간 세대)
 xcode-select --install
 ```
 
-**Windows** — [MSYS2](https://www.msys2.org/) 설치 후 MINGW64 터미널에서 실행:
+**Windows** — MSYS2 MinGW64 gcc 사용 (MSYS2 터미널 불필요)
 
-```bash
-pacman -S mingw-w64-x86_64-gcc make
+MSYS2가 설치되어 있으면 추가 설치 없이 바로 사용할 수 있다.  
+gcc 경로는 `.vscode/terminal_profile.ps1` 에 자동으로 설정되어 있다.
+
+```
+C:\msys64\mingw64\bin\gcc.exe
 ```
 
-### Compile
+MSYS2가 없다면 [winlibs.com](https://winlibs.com/) → **UCRT runtime** → 최신 ZIP을 `C:\mingw64` 에 압축 해제 후,  
+`terminal_profile.ps1` 첫 줄의 경로를 `C:\mingw64\bin` 으로 변경한다.
 
-프로젝트 루트 디렉터리에서 실행합니다.
+---
+
+### Windows 빌드 메뉴얼
+
+VS Code에서 프로젝트 폴더를 연 뒤, 내장 터미널(`Ctrl + `` `)을 새로 열면  
+`PowerShell (촌수계산기)` 프로필이 자동으로 로드되어 `build` 명령을 바로 사용할 수 있다.
+
+**1단계 — 컴파일러 설치 확인**
+
+```powershell
+gcc --version
+```
+
+**2단계 — 최신 소스 받기**
+
+```powershell
+git pull
+```
+
+**3단계 — .exe 빌드** (alias 한 줄)
+
+```powershell
+build
+```
+
+빌드 성공 시 프로젝트 루트(`README.md` 와 같은 위치)에 `family_tree.exe` 가 생성된다.
+
+> `Ctrl + Shift + B` → **Build family_tree.exe** 를 선택해도 동일하게 빌드된다. (`.vscode/tasks.json`)
+
+**4단계 — 실행**
+
+```powershell
+.\family_tree.exe
+```
+
+---
+
+### Windows 테스트 메뉴얼
+
+```powershell
+cd test
+```
+
+```powershell
+gcc -std=c11 -I../include -I../src `
+    test_relation.c `
+    ../src/family/family_tree.c `
+    ../src/algorithm/dfs.c `
+    ../src/algorithm/relation.c `
+    ../src/data/keywords.c `
+    -o test_relation.exe -static
+```
+
+```powershell
+.\test_relation.exe
+```
+
+```powershell
+cd ..
+```
+
+---
+
+### Windows 빌드 결과물 삭제
+
+```cmd
+del family_tree.exe
+```
+
+---
+
+### macOS / Linux 빌드 메뉴얼
+
+```bash
+git pull
+```
 
 ```bash
 make
 ```
 
-빌드가 완료되면 프로젝트 루트에 실행 파일이 생성됩니다.
-
-### Run
-
-**macOS / Linux**
-
 ```bash
 ./family_tree
 ```
 
-**Windows** (MSYS2 MinGW64 터미널)
+테스트:
 
 ```bash
-./family_tree.exe
-```
-
-### Test
-
-```bash
-cd test
-gcc -std=c11 -I../include -I../src \
+cd test && gcc -std=c11 -I../include -I../src \
     test_relation.c \
     ../src/family/family_tree.c \
     ../src/algorithm/dfs.c \
@@ -236,7 +304,7 @@ gcc -std=c11 -I../include -I../src \
     -o test_relation && ./test_relation
 ```
 
-### Clean
+정리:
 
 ```bash
 make clean
