@@ -37,6 +37,7 @@
   - [호칭 계산](#relation-matching-lca-pattern-matching)
   - [배우자 연산 처리](#spouse-post-processing)
   - [Node Structure](#node-structure)
+- [시간 복잡도 명세](#시간-복잡도-명세time-complexity)
 - [UI](#ui)
 - [Project Structure](#project-structure)
 - [Build](#build)
@@ -241,6 +242,26 @@ typedef struct Person {
     struct Person *spouse;  /* 배우자                 */
 } Person;
 ```
+
+---
+
+## 시간 복잡도 명세(Time Complexity)
+
+> N = 전체 노드 수, P = DFS 경로 길이(최대 5), S = 형제 수
+
+| 기능 | 시간 복잡도 | 근거 |
+|---|---|---|
+| 노드 생성 / 배우자 연결 (`createPerson`, `addSpouse`) | O(1) | 포인터 초기화 및 교환 |
+| 자식 추가 (`addChild`) | O(S) | 마지막 형제까지 `next` 순회 |
+| 노드 탐색 (`findPerson`) | O(N²) | N 노드 방문 × visited 배열 선형 탐색 O(N) |
+| 혈족 경로 DFS (`findPath`) | O(N²) | N 노드 방문 × visited 배열 선형 탐색 O(N) |
+| LCA 추출 (`find_lca_idx`) | O(P) | 경로 배열 1회 선형 순회 |
+| 촌수 계산 (`computeChonsu`) | O(P) | LCA 추출 후 X + Y 합산 |
+| 호칭 결정 (`getRelation`) | O(P) | LCA 추출 후 상수 번 조건 분기 |
+| 배우자 호칭 후처리 (`applySpouseTable`) | O(1) | 상수 번의 문자열 비교 |
+| 덱 삽입 / 삭제 (`dequePush*`, `dequePop*`) | O(1) | 원형 배열 모듈러 인덱스 직접 접근 |
+| 스택 삽입 / 삭제 (`stackPush`, `stackPop`) | O(1) | 연결 리스트 head 삽입·제거 |
+| UI 세대 수집 (`dequeViewUpdate`) | O(S²) | birth_year 기준 삽입 정렬 누적 |
 
 ---
 
