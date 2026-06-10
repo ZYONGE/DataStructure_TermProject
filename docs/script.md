@@ -1,7 +1,7 @@
 # AI Agent 인계 문서
 ## 자료구조 기말 프로젝트 — 가족 호칭 탐색 시스템
 
-> **작성일:** 2026-05-21 | **버전:** 2.1 (최종 정리본)
+> **업데이트:** 2026-06-10
 
 ---
 
@@ -27,58 +27,11 @@
 
 ---
 
-## 수정 대상 파일
-
-```
-include/
-  stack.h          ─ 수정 불필요 (UI 자료구조)
-  deque.h          ─ 수정 불필요 (UI 자료구조)
-  ds.h             ─ 수정 불필요
-
-src/
-  family/
-    person.h       ★ 구조체 변경 (age → birth_year)
-    family_tree.h  ★ 함수 시그니처 변경
-    family_tree.c  ★ 로직 변경
-  algorithm/
-    dfs.h          ★ 변경
-    dfs.c          ★ 완전 재작성 (spouse 간선 제거)
-    relation.h     ★ 변경
-    relation.c     ★ 완전 재작성 (LCA 패턴 매칭)
-  data/
-    keywords.h     ★ 완전 재작성 (구어 → 한자어 병기)
-    keywords.c     ★ 완전 재작성 (relation_table 제거)
-  ui/              ─ 수정 불필요
-  util/            ─ 수정 불필요
-  main.c           ★ 부분 수정 (birth_year 표시, 배우자 사전 체크)
-  option.c/h       ─ 유지
-
-test/
-  test_relation.c  ★ 완전 재작성 (트리 재구성 + 기대값 교체)
-```
-
----
-
 ## 핵심 설계 사항
 
-### 1. `Person` 구조체 — `age` → `birth_year`
+### 1. `Person` 구조체
 
 ```c
-/* 변경 전 */
-typedef struct Person {
-    char name[50];
-    char gender;
-    int  age;           // ← 제거
-    int  branch;        // ← 제거 (외가 제외로 불필요)
-    struct Person *parent;
-    struct Person *parent2; // ← 제거 (외가 탐색 불필요)
-    struct Person *child;
-    struct Person *prev;
-    struct Person *next;
-    struct Person *spouse;
-} Person;
-
-/* 변경 후 */
 typedef struct Person {
     char name[50];
     char gender;
@@ -91,17 +44,11 @@ typedef struct Person {
 } Person;
 ```
 
-> `branch`, `parent2` 필드는 설계 범위 축소(외가 제외)로 완전 제거.
-
 ---
 
-### 2. DFS — blood 간선만 사용 (spouse 완전 배제)
+### 2. DFS — blood 간선만 사용
 
 ```c
-/* 변경 전 — 잘못된 방식 */
-if ((res = dfsHelper(cur->spouse, ...)) != -1) return res;  // ← 삭제
-
-/* 변경 후 — blood 간선만 탐색 */
 // parent / child / prev / next 포인터만 사용
 // spouse 간선은 DFS에서 완전 제거
 // 배우자 호칭은 후처리 교체 테이블로 별도 처리
@@ -109,15 +56,9 @@ if ((res = dfsHelper(cur->spouse, ...)) != -1) return res;  // ← 삭제
 
 ---
 
-### 3. 관계 결정 로직 — 촌수 테이블 → LCA 경로 패턴 매칭
+### 3. 관계 결정 로직 — LCA 경로 패턴 매칭
 
 ```c
-/* 변경 전 — design.md가 명시적으로 "잘못된 방법"으로 지정 */
-int chonsu  = upSteps + downSteps;
-int genDiff = downSteps - upSteps;
-// → 촌수+genDiff 기반 테이블 조회
-
-/* 변경 후 — LCA 기반 경로 패턴 매칭 */
 // Step 1: LCA 인덱스 추출
 static int find_lca_idx(Person **path, int pathLen) {
     int lca = 0;
@@ -141,13 +82,10 @@ Person **down = &path[lca_idx + 1]; // [lca_idx+1 .. pathLen-1]
 
 ---
 
-### 4. 키워드 — 구어체 → 한자어 병기
+### 4. 키워드 — 한자어 병기
 
 ```c
-/* 제거 대상 (구어체) */
-"아버지", "삼촌", "큰아버지", "형", "누나", "오빠", "사촌형" ...
-
-/* 구현 범위 내 키워드 (한자어 병기) */
+/* 구현 범위 내 키워드 */
 "부(父)",  "모(母)"                               // 직계 1촌
 "조부(祖父)",  "조모(祖母)"                       // 직계 2촌 상향
 "형(兄)",  "제(弟)",  "자(姊)",  "매(妹)"         // 2촌 동항렬
@@ -170,19 +108,14 @@ Person **down = &path[lca_idx + 1]; // [lca_idx+1 .. pathLen-1]
 "관계 없음"
 ```
 
-> **완전 삭제 대상:** 외숙부·이모·이모부·외숙모 (외가 제외) / 당숙·당고모·종조부·대고모·재당숙 (증조부 경유, 범위 초과) / 손·손녀·질·질녀 (하향 세대 제외)
-
 ---
 
 ### 5. 배우자 호칭 — 2단계 분리 처리
 
 ```
-[기존] DFS가 spouse 간선으로 경로 생성 → 관계 계산 혼재
-
-[변경 후]
- Step 1. target이 p1->spouse 또는 p2->spouse인지 사전 체크
- Step 2. 혈족 원본(spouse의 혈족)에 대해 blood DFS 수행
- Step 3. 혈족 호칭에 배우자 후처리 교체 테이블 적용
+Step 1. target이 p1->spouse 또는 p2->spouse인지 사전 체크
+Step 2. 혈족 원본(spouse의 혈족)에 대해 blood DFS 수행
+Step 3. 혈족 호칭에 배우자 후처리 교체 테이블 적용
 ```
 
 ```c
@@ -205,7 +138,6 @@ void menuChonsu(Person *p1, Person *p2) {
 ### 4촌 세분화 조건 (relation.c, X==2 && Y==2 분기)
 
 ```c
-// 역방향 판별 버그 수정 포함
 Person *dn0 = path[lca_idx + 1];   // target 쪽 분기점
 Person *up1 = path[lca_idx - 1];   // 나 쪽 분기점
 int through_female = (dn0->gender == 'F' || up1->gender == 'F');
@@ -250,13 +182,13 @@ addChild(고모, 고종매);
 ## 구현 순서
 
 ```
-1  src/family/person.h         구조체 변경 (age→birth_year, branch/parent2 제거)
-2  src/family/family_tree.c    createPerson / addChild / addSpouse 수정
-3  src/algorithm/dfs.c         spouse 간선 제거, blood 간선만 탐색
-4  src/data/keywords.h/c       한자어 병기 전면 교체 + relation_table 제거
-5  src/algorithm/relation.c    LCA 기반 패턴 매칭 완전 재작성
-6  test/test_relation.c        트리 재구성 + 기대값 교체 (4촌 이내)
-7  src/main.c                  birth_year 표시, 배우자 사전 체크 추가
+1  src/family/person.h         Person 구조체 (birth_year, 단일 parent 포인터)
+2  src/family/family_tree.c    createPerson / addChild / addSpouse
+3  src/algorithm/dfs.c         blood 간선만 탐색 (spouse 간선 제외)
+4  src/data/keywords.h/c       한자어 병기 키워드 + 배우자 교체 테이블
+5  src/algorithm/relation.c    LCA 기반 패턴 매칭
+6  test/test_relation.c        트리 구성 + 기대값 (4촌 이내)
+7  src/main.c                  birth_year 표시, 배우자 사전 체크
 8  make && ./test_relation      빌드 및 전체 테스트 통과 확인
 ```
 
@@ -266,11 +198,11 @@ addChild(고모, 고종매);
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
-║  [ 조부모 세대 ]  ◀ [할아버지]─[할머니]                    ▶ ║
+║  [ 조부모 세대 ]    [할아버지]─[할머니]                       ║
 ╠══════════════════════════════════════════════════════════════╣
-║  [ 부모 세대 ]    ◀ [백부]─[백모]  [아버지]─[어머니]  [고모]▶║
+║  [ 부모 세대 ]      [백부]─[백모]  [아버지]─[어머니]  [고모]  ║
 ╠══════════════════════════════════════════════════════════════╣
-║  [ 본인 세대 ]    ◀ [종형]  [나★]  [여동생]  [고종매]      ▶ ║
+║  [ 본인 세대 ]      [종형]  [나]  [여동생]  [고종매]          ║
 ╠══════════════╦═══════════════════════════════════════════════╣
 ║  [ MENU ]       [ MAIN UI ]                                  
 ║  1. 추가                                                      
@@ -295,11 +227,10 @@ addChild(고모, 고종매);
 | 항목 | 세부 내용 |
 |---|---|
 | `birth_year` 의미 | 값이 작을수록 연상. `백부 조건 : target.birth_year < 아버지.birth_year` |
-| 4촌 분기 기준 | `down[0].gender` 단독이 아닌 **양쪽 분기점 모두 확인** (역방향 버그 방지) |
+| 4촌 분기 기준 | `down[0].gender` 단독이 아닌 **양쪽 분기점 모두 확인** (역방향 오판 방지) |
 | 구어체 잔존 코드 | `relation_table` 포함 구어체 코드 전체 삭제 |
-| 외가 경로 탐색 | 제거 완료. 문제 자체 소멸 |
-| `branch`, `parent2` | 제거 완료. 문제 자체 소멸 |
-
+| 외가 경로 탐색 | 구현 범위 밖 |
+| `branch`, `parent2` 필드 | `Person` 구조체에 없음 |
 
 ---
 
@@ -307,9 +238,9 @@ addChild(고모, 고종매);
 
 | 항목 | 결정 |
 |---|---|
-| `birth_year` 역할 | 동항렬(형·동생) 구분용 숫자. 기존 `age`의 연산을 `birth_year`로 대체 |
+| `birth_year` 역할 | 동항렬(형·동생) 구분용 숫자 |
 | 기준 연도 | 2004 (나의 birth_year) |
-| 자기 자신 호칭 | `"본인"` 유지 |
+| 자기 자신 호칭 | `"본인"` |
 | 미연결 관계 반환값 | `"관계 없음"` |
 | 배우자 역방향 호칭 | `"생질(甥姪)"` |
 | 고종형제 세분화 | 고종형·고종제·고종자·고종매 각각 구분 (외종·이종은 외가 제외로 미구현) |
@@ -318,5 +249,3 @@ addChild(고모, 고종매);
 | 구현 최대 촌수 | 4촌 이내 (5촌 이상은 세대 범위 초과로 미구현) |
 
 ---
-
-*작성일: 2026-05-21 | 버전: 2.1*
