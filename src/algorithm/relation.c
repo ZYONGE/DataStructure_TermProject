@@ -157,7 +157,7 @@ const char *getRelationMessage(const char *r) {
     if (strcmp(r, KW_GRANDFATHER) == 0) return "할아버지";
     if (strcmp(r, KW_GRANDMOTHER) == 0) return "할머니";
     if (strcmp(r, KW_HYUNG)       == 0) return "형";
-    if (strcmp(r, KW_JE)          == 0) return "남동생.";
+    if (strcmp(r, KW_JE)          == 0) return "남동생";
     if (strcmp(r, KW_JA)          == 0) return "누나";
     if (strcmp(r, KW_MAE)         == 0) return "여동생";
     if (strcmp(r, KW_BAEKBU)      == 0) return "큰아버지";
