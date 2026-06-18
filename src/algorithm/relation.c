@@ -152,20 +152,20 @@ const char *getRelationReverse(Person *me, Person *target,
 
 const char *getRelationMessage(const char *r) {
     if (!r) return NULL;
-    if (strcmp(r, KW_FATHER)      == 0) return "아버지 이제야 깨달아요";
-    if (strcmp(r, KW_MOTHER)      == 0) return "어머니께 효도합시다.";
-    if (strcmp(r, KW_GRANDFATHER) == 0) return "조부. 조부 위로 증조부. 증조부 위에 고조부...";
-    if (strcmp(r, KW_GRANDMOTHER) == 0) return "할머니 손맛이 그리운 날이 있다";
-    if (strcmp(r, KW_HYUNG)       == 0) return "이스터에그: 저는 형이 2명이 있습니다.";
-    if (strcmp(r, KW_JE)          == 0) return "동생을 괴롭히지 맙시다.";
-    if (strcmp(r, KW_JA)          == 0) return "누나!!!";
-    if (strcmp(r, KW_MAE)         == 0) return "동생을 괴롭히지 맙시다.";
-    if (strcmp(r, KW_BAEKBU)      == 0) return "요즘 백부라는 말을 누가 쓰겠어요?";
-    if (strcmp(r, KW_SUKBU)       == 0) return "숙부의 숙은 아저씨라는 뜻입니다.";
-    if (strcmp(r, KW_GOMO)        == 0) return "시어미 고, 어머니 모";
-    if (strcmp(r, KW_BAENGMO)     == 0) return "맏이 백, 어머니 모";
-    if (strcmp(r, KW_SUNGMO)      == 0) return "개인적으로 숙모 보다는 작은 엄마가 더 맘에 드는 호칭입니다.";
-    if (strcmp(r, KW_GOMOBU)      == 0) return "GO! 모부";
-    if (strstr(r, "종") != NULL)        return "사촌은 촌수 인덱스 그 자체가 호칭인 거의 유일한 경우입니다.";
+    if (strcmp(r, KW_FATHER)      == 0) return "아버지";
+    if (strcmp(r, KW_MOTHER)      == 0) return "어머니";
+    if (strcmp(r, KW_GRANDFATHER) == 0) return "할아버지";
+    if (strcmp(r, KW_GRANDMOTHER) == 0) return "할머니";
+    if (strcmp(r, KW_HYUNG)       == 0) return "형";
+    if (strcmp(r, KW_JE)          == 0) return "남동생.";
+    if (strcmp(r, KW_JA)          == 0) return "누나";
+    if (strcmp(r, KW_MAE)         == 0) return "여동생";
+    if (strcmp(r, KW_BAEKBU)      == 0) return "큰아버지";
+    if (strcmp(r, KW_SUKBU)       == 0) return "작은아버지";
+    if (strcmp(r, KW_GOMO)        == 0) return "고모";
+    if (strcmp(r, KW_BAENGMO)     == 0) return "큰어머니";
+    if (strcmp(r, KW_SUNGMO)      == 0) return "작은어머니";
+    if (strcmp(r, KW_GOMOBU)      == 0) return "고모부";
+    if (strstr(r, "종") != NULL)        return "사촌";
     return NULL;
 }
