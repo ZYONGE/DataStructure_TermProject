@@ -152,20 +152,20 @@ const char *getRelationReverse(Person *me, Person *target,
 
 const char *getRelationMessage(const char *r) {
     if (!r) return NULL;
-    if (strcmp(r, KW_FATHER)      == 0) return "아버지 ";
+    if (strcmp(r, KW_FATHER)      == 0) return "아버지";
     if (strcmp(r, KW_MOTHER)      == 0) return "어머니";
-    if (strcmp(r, KW_GRANDFATHER) == 0) return "조부";
+    if (strcmp(r, KW_GRANDFATHER) == 0) return "할아버지";
     if (strcmp(r, KW_GRANDMOTHER) == 0) return "할머니";
-    if (strcmp(r, KW_HYUNG)       == 0) return "형.";
-    if (strcmp(r, KW_JE)          == 0) return "동생";
+    if (strcmp(r, KW_HYUNG)       == 0) return "형";
+    if (strcmp(r, KW_JE)          == 0) return "남동생";
     if (strcmp(r, KW_JA)          == 0) return "누나";
-    if (strcmp(r, KW_MAE)         == 0) return "동생";
-    if (strcmp(r, KW_BAEKBU)      == 0) return "백부";
-    if (strcmp(r, KW_SUKBU)       == 0) return "조카";
+    if (strcmp(r, KW_MAE)         == 0) return "여동생";
+    if (strcmp(r, KW_BAEKBU)      == 0) return "큰아버지";
+    if (strcmp(r, KW_SUKBU)       == 0) return "작은아버지";
     if (strcmp(r, KW_GOMO)        == 0) return "고모";
-    if (strcmp(r, KW_BAENGMO)     == 0) return "백모";
-    if (strcmp(r, KW_SUNGMO)      == 0) return "숙부";
+    if (strcmp(r, KW_BAENGMO)     == 0) return "큰어머니";
+    if (strcmp(r, KW_SUNGMO)      == 0) return "작은어머니";
     if (strcmp(r, KW_GOMOBU)      == 0) return "고모부";
-    if (strstr(r, "종") != NULL)        return "사촌.";
+    if (strstr(r, "종") != NULL)        return "사촌";
     return NULL;
 }
